@@ -7,7 +7,7 @@
       border
       :tree-props="{children: 'children'}"
     >
-      <el-table-column prop="id" label="活动名称"></el-table-column>
+      <el-table-column prop="title" label="活动名称"></el-table-column>
      
 
       <el-table-column prop="status" label="状态">
@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { reqGoodsDel } from "../../../utils/http";
+import { reqSecksDel } from "../../../utils/http";
 import { successAlert } from "../../../utils/alert";
 import { mapActions, mapGetters } from "vuex";
 
@@ -39,20 +39,18 @@ export default {
 
   computed: {
     ...mapGetters({
-      list:"goods/list"
+      list:"seckill/list"
     })
   },
   methods: {
     ...mapActions({
-      reqList: "goods/reqList",
-       reqCount:"goods/reqCount",
+      reqList: "seckill/reqList",
     }),
     del(id) {
-      reqGoodsDel(id).then(res => {
+      reqSecksDel(id).then(res => {
         if (res.data.code === 200) {
           successAlert(res.data.msg);
           this.reqList();
-           this.reqCount()
         }
       });
     },

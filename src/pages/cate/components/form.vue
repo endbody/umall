@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :title="info.title" :visible.sync="info.isShow">
+    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
       <el-form :model="cate">
         <el-form-item label="上级分类" label-width="150px">
           <el-select v-model="cate.pid" placeholder="请选择">
@@ -14,17 +14,11 @@
           <el-input v-model="cate.catename" autocomplete="off"></el-input>
         </el-form-item>
 
-        <el-form-item label="图片" label-width="150px"  v-if="cate.pid !== 0">
-          <el-upload
-            class="avatar-uploader"
-            action="#"
-            :on-change="Upload"
-            v-if="info.isShow"
-          >
+        <el-form-item label="图片" label-width="150px" v-if="cate.pid !== 0">
+          <el-upload class="avatar-uploader" action="#" :on-change="Upload" v-if="info.isShow">
             <img v-if="imgUrl" :src="imgUrl" class="avatar" />
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
-
         </el-form-item>
 
         <el-form-item label="状态" label-width="150px">
@@ -79,10 +73,13 @@ export default {
       resCateDetail(id).then(res => {
         if (res.data.code === 200) {
           this.cate = res.data.list;
-          this.imgUrl = this.$img+res.data.list.img
-          this.cate.id = id
+          this.imgUrl = this.$img + res.data.list.img;
+          this.cate.id = id;
         }
       });
+    },
+    close() {
+      this.empty();
     },
     empty() {
       this.cate = {
@@ -91,13 +88,37 @@ export default {
         img: "",
         status: 1
       };
-      this.imgUrl= null,
+      this.imgUrl = null;
       this.UserList = []
     },
     Alter() {
       this.info.isShow = false;
     },
+            //验证
+    check() {
+      return new Promise((resolve, reject) => {
+        //验证
+        if (this.cate.pid === "") {
+          errorAlert("上级分类不能为空");
+          return;
+        }
+        if (this.cate.catename === "") {
+          errorAlert("分类名称不能为空");
+          return;
+        }
+
+        if (this.imgUrl == null) {
+          errorAlert("图片为空");
+          return;
+        }
+
+        resolve();
+        
+      });
+      
+    },
     add() {
+      this.check().then(()=>{
       reqCateAdd(this.cate).then(res => {
         if (res.data.code == 200) {
           successAlert(res.data.msg);
@@ -106,6 +127,8 @@ export default {
           this.reqList();
         }
       });
+      })
+
     },
 
     Upload(e) {
@@ -132,7 +155,7 @@ export default {
           successAlert(res.data.msg);
           this.empty();
           this.Alter();
-          this.reqList()
+          this.reqList();
         }
       });
     },
@@ -153,26 +176,26 @@ export default {
 
 <style>
 .avatar-uploader .el-upload {
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  .avatar-uploader .el-upload:hover {
-    border-color: #409EFF;
-  }
-  .avatar-uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    width: 178px;
-    height: 178px;
-    line-height: 178px;
-    text-align: center;
-  }
-  .avatar {
-    width: 178px;
-    height: 178px;
-    display: block;
-  }
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
 </style>

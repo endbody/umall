@@ -1,9 +1,9 @@
 <template>
   <div>
-    <el-dialog :title="info.title" :visible.sync="info.isShow">
+    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
       <el-form :model="goods">
-        <el-form-item label="一级分类" label-width="150px">
-          <el-select v-model="goods.first_cateid" placeholder="请选择" @change="changeCateid">
+        <el-form-item label="一级分类" label-width="150px" >
+          <el-select v-model="goods.first_cateid" prop="first_cateid" placeholder="请选择" @change="changeCateid">
             <el-option
               v-for="item in CateList"
               :key="item.id"
@@ -23,8 +23,8 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="商品名称" label-width="150px">
-          <el-input v-model="goods.goodsname" autocomplete="off"></el-input>
+        <el-form-item label="商品名称" label-width="150px" >
+          <el-input v-model="goods.goodsname" prop="goodsname" autocomplete="off"></el-input>
         </el-form-item>
 
         <el-form-item label="价格" label-width="150px">
@@ -88,7 +88,12 @@
 </template>
 
 <script>
-import { reqGoodsAdd, resCateList, reqGoodsDetail,reqGoodsUpdate } from "../../../utils/http";
+import {
+  reqGoodsAdd,
+  resCateList,
+  reqGoodsDetail,
+  reqGoodsUpdate
+} from "../../../utils/http";
 import { successAlert, errorAlert } from "../../../utils/alert";
 import { mapActions, mapGetters } from "vuex";
 import path from "path";
@@ -102,6 +107,32 @@ export default {
   },
   data() {
     return {
+          rules: {
+        first_cateid: [
+          { required: true, message: "请输入一级分类", trigger: "change" }
+        ],
+        second_cateid: [
+          { required: true, message: "请输入二级分类", trigger: "change" }
+        ],
+        goodsname: [
+          { required: true, message: "请输入商品名称", trigger: "blur" }
+        ],
+        price: [{ required: true, message: "请输入商品价格", trigger: "blur" }],
+        market_price: [
+          { required: true, message: "请输入商品市场价格", trigger: "blur" }
+        ],
+        specsid: [
+          { required: true, message: "请输入商品规格", trigger: "change" }
+        ],
+        specsattr: [
+          {
+            type: "array",
+            required: true,
+            message: "请至少选择一个规格属性",
+            trigger: "change"
+          }
+        ]
+      },
       goods: {
         first_cateid: "",
         second_cateid: "",
@@ -128,20 +159,27 @@ export default {
       reqCateList: "cate/reqList",
       reqSpecsList: "specs/reqList",
       reqGoodList: "goods/reqList",
-      reqCount:"goods/reqCount",
-
+      reqCount: "goods/reqCount"
     }),
     getOne(id) {
-
       reqGoodsDetail(id).then(res => {
         if (res.data.code === 200) {
           this.goods = res.data.list;
           this.imgUrl = this.$img + res.data.list.img;
           this.atteArr = JSON.parse(res.data.list.specsattr);
-           this.atterListArr = JSON.parse(res.data.list.specsattr);
+          this.atterListArr = JSON.parse(res.data.list.specsattr);
           this.goods.id = id;
+
+          resCateList({ pid: this.goods.first_cateid }).then(res => {
+            if (res.data.code === 200) {
+              this.secondList = res.data.list;
+            }
+          });
         }
       });
+    },
+    close() {
+      this.empty();
     },
     empty() {
       this.goods = {
@@ -166,17 +204,64 @@ export default {
     Alter() {
       this.info.isShow = false;
     },
+       //验证
+    check() {
+      return new Promise((resolve, reject) => {
+        //验证
+        if (this.goods.first_cateid === "") {
+          errorAlert("一级分类不能为空");
+          return;
+        }
+        if (this.goods.second_cateid === "") {
+          errorAlert("二级分类不能为空");
+          return;
+        }
+        if (this.goods.goodsname === "") {
+          errorAlert("商品名称为空");
+          return;
+        }
+        if (this.goods.price === "") {
+          errorAlert("商品价格为空");
+          return;
+        }
+        if (this.goods.market_price === "") {
+          errorAlert("商品市场价格为空");
+          return;
+        }
+        if (!this.goods.img) {
+          errorAlert("请选择图片");
+          return;
+        }
+        if (this.goods.specsid === "") {
+          errorAlert("请选择商品规格");
+          return;
+        }
+        if (this.goods.specsattr.length === 0) {
+          errorAlert("请选择商品属性");
+          return;
+        }
+        if (this.editor.txt.html() === "") {
+          errorAlert("请输入商品描述");
+          return;
+        }
+        resolve();
+        
+      });
+      
+    },
     add() {
-      this.p = { ...this.goods };
+      this.check().then(()=>{
+        this.p = { ...this.goods };
       this.p.specsattr = JSON.stringify(this.atteArr);
       reqGoodsAdd(this.p).then(res => {
         if (res.data.code == 200) {
           this.empty();
           this.Alter();
           this.reqGoodList();
-          this.reqCount()
+          this.reqCount();
         }
       });
+      })
     },
 
     atterList() {

@@ -31,7 +31,7 @@ export default {
   components: {
     list,
     vForm
-  },
+  }, 
   methods: {
     ...mapActions({
       reqList:"goods/reqList",

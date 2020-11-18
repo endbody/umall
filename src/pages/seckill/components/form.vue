@@ -1,19 +1,30 @@
 <template>
   <div>
-    <el-dialog :title="info.title" :visible.sync="info.isShow">
+    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
       <el-form :model="seck">
         <el-form-item label="活动名称" label-width="150px">
           <el-input v-model="seck.title" autocomplete="off"></el-input>
         </el-form-item>
 
         <el-form-item label="活动期限" label-width="150px">
-          <el-date-picker
+          <!-- <el-date-picker
             v-model="value1"
             type="daterange"
             range-separator="至"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
-          ></el-date-picker>
+            value-format="timestamp"
+          ></el-date-picker> -->
+
+           <el-date-picker
+     v-model="value1"
+      type="datetimerange"
+      range-separator="至"
+      start-placeholder="开始日期"
+      end-placeholder="结束日期"
+      value-format="timestamp"
+      align="right">
+    </el-date-picker>
         </el-form-item>
 
         <el-form-item label="一级分类" label-width="150px">
@@ -29,13 +40,23 @@
 
         <el-form-item label="二级分类" label-width="150px">
           <el-select v-model="seck.second_cateid" placeholder="请选择" @change="changeSecondid">
-            <el-option v-for="item in secondList" :key="item.id" :label="item.catename" :value="item.id"></el-option>
+            <el-option
+              v-for="item in secondList"
+              :key="item.id"
+              :label="item.catename"
+              :value="item.id"
+            ></el-option>
           </el-select>
         </el-form-item>
-{{goods}}
+
         <el-form-item label="商品" label-width="150px">
-          <el-select v-model="seck.goodsid" placeholder="请选择" multiple>
-            <el-option v-for="item in goods" :key="item.id" :label="item.name" :value="item.id"></el-option>
+          <el-select v-model="seck.goodsid" placeholder="请选择">
+            <el-option
+              v-for="item in goodsList"
+              :key="item.id"
+              :label="item.goodsname"
+              :value="item.id"
+            ></el-option>
           </el-select>
         </el-form-item>
 
@@ -55,10 +76,10 @@
 
 <script>
 import {
-  reqGoodsAdd,
+  reqSecksAdd,
   resCateList,
-  reqGoodsDetail,
-  reqGoodsUpdate
+  reqSecksDetail,
+  reqSecksUpdate
 } from "../../../utils/http";
 import { successAlert, errorAlert } from "../../../utils/alert";
 import { mapActions, mapGetters } from "vuex";
@@ -68,7 +89,8 @@ export default {
   computed: {
     ...mapGetters({
       CateList: "cate/list",
-      specsList: "specs/list"
+      specsList: "specs/list",
+      goodsList: "goods/list"
     })
   },
   data() {
@@ -82,9 +104,9 @@ export default {
         goodsid: "",
         status: 1
       },
-      value1: "",
-      secondList : [],
-      goods:[]
+      value1: [],
+      secondList: [],
+      arr: []
     };
   },
   props: ["info"],
@@ -93,18 +115,31 @@ export default {
       reqCateList: "cate/reqList",
       reqSpecsList: "specs/reqList",
       reqGoodList: "goods/reqList",
-      reqCount: "goods/reqCount"
+      reqList: "seckill/reqList"
     }),
     getOne(id) {
-      reqGoodsDetail(id).then(res => {
+      this.value1 = [];
+      reqSecksDetail(id).then(res => {
         if (res.data.code === 200) {
-          this.goods = res.data.list;
-          this.imgUrl = this.$img + res.data.list.img;
-          this.atteArr = JSON.parse(res.data.list.specsattr);
-          this.atterListArr = JSON.parse(res.data.list.specsattr);
-          this.goods.id = id;
+          this.seck = res.data.list;
+          this.seck.id = id;
+          this.value1.push(this.seck.begintime, this.seck.endtime);
+
+          resCateList({ pid: this.seck.first_cateid }).then(res => {
+            if (res.data.code === 200) {
+              this.secondList = res.data.list;
+            }
+          });
+
+          this.reqGoodList({
+            fid: this.seck.first_cateid,
+            sid: this.seck.second_cateid
+          });
         }
       });
+    },
+        close() {
+      this.empty();
     },
     empty() {
       this.seck = {
@@ -117,30 +152,23 @@ export default {
         status: 1
       };
       this.value1 = [];
+      (this.secondList = []), (this.arr = []);
     },
     Alter() {
       this.info.isShow = false;
     },
     add() {
-      console.log(this.seck)
-    console.log(this.value1)
-      reqGoodsAdd(this.p).then(res => {
-        if (res.data.code == 200) {
-          this.empty();
-          this.Alter();
-          this.reqGoodList();
-          this.reqCount();
-        }
-      });
-    },
-
-    atterList() {
-      this.atteArr = this.specsList.find(item => {
-        return item.id == this.goods.specsid;
-      }).attrs;
+      this.seck.begintime = this.value1[0];
+      this.seck.endtime = this.value1[1];
+      reqSecksAdd(this.seck);
+      this.reqList();
+      this.Alter();
+      this.empty();
     },
 
     changeCateid() {
+      this.seck.second_cateid = "";
+      this.seck.goodsid = "";
       resCateList({ pid: this.seck.first_cateid }).then(res => {
         if (res.data.code === 200) {
           this.secondList = res.data.list;
@@ -148,40 +176,23 @@ export default {
       });
     },
 
-changeSecondid(){
-  // console.log(this.seck.first_cateid,this.seck.second_cateid)
-  this.reqGoodList({fid:this.seck.first_cateid,sid:this.seck.second_cateid}).then(res=>{
-    if(res.data.code === 200){
-      this.goods = res.data.list
-    }
-  })
-},
-
-    Upload(e) {
-      let extname = path.extname(e.raw.name);
-      let extArr = [".jpg", ".jpeg", ".png", ".jif"];
-      if (!extArr.includes(extname)) {
-        errorAlert("请上传正确的图片格式");
-        return;
-      }
-      if (e.size > 2 * 1024 * 1024) {
-        console.log(e.size);
-        errorAlert("图片大小不能超过2M");
-        return;
-      }
-      this.imgUrl = URL.createObjectURL(e.raw);
-      this.goods.img = e.raw;
+    changeSecondid() {
+      this.seck.goodsid = "";
+      this.reqGoodList({
+        fid: this.seck.first_cateid,
+        sid: this.seck.second_cateid
+      });
     },
 
     update() {
-      this.p = { ...this.goods };
-      this.p.specsattr = JSON.stringify(this.atteArr);
-      reqGoodsUpdate(this.goods).then(res => {
+      this.seck.begintime = this.value1[0];
+      this.seck.endtime = this.value1[1];
+      reqSecksUpdate(this.seck).then(res => {
         if (res.data.code === 200) {
           successAlert(res.data.msg);
           this.empty();
           this.Alter();
-          this.reqGoodList();
+          this.reqList();
         }
       });
     }

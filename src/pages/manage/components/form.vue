@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :title="info.title" :visible.sync="info.isShow">
+    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
       <el-form :model="user">
      
         <el-form-item label="所属角色" label-width="150px">
@@ -45,7 +45,7 @@ import {
   resUserDetail,
   
 } from "../../../utils/http";
-import { successAlert } from "../../../utils/alert";
+import { successAlert,errorAlert } from "../../../utils/alert";
 
 export default {
   data() {
@@ -70,6 +70,9 @@ export default {
         }
       });
     },
+        close() {
+      this.empty();
+    },
     empty() {
       this.user = {
         roleid: "",
@@ -82,8 +85,33 @@ export default {
     Alter() {
       this.info.isShow = false;
     },
+
+            //验证
+    check() {
+      return new Promise((resolve, reject) => {
+        //验证
+        if (this.user.roleid === "") {
+          errorAlert("所属角色不能为空");
+          return;
+        }
+        if (this.user.username === "") {
+          errorAlert("用户名不能为空");
+          return;
+        }
+
+        if (this.user.password === "") {
+          errorAlert("密码不能为空");
+          return;
+        }
+
+        resolve();
+        
+      });
+      
+    },
     add() {
-      reqUserAdd(this.user).then(res => {
+   this.check().then(()=>{
+        reqUserAdd(this.user).then(res => {
         console.log(this.user)
         if (res.data.code == 200) {
           successAlert(res.data.msg);
@@ -92,6 +120,7 @@ export default {
           this.$emit("init");
         }
       });
+   })
     },
 
     update() {

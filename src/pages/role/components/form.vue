@@ -35,7 +35,7 @@ import {
   reqMenuListAll,
   reqRolEdit
 } from "../../../utils/http";
-import { successAlert } from "../../../utils/alert";
+import { successAlert,errorAlert } from "../../../utils/alert";
 
 export default {
   data() {
@@ -70,8 +70,22 @@ export default {
     Alter() {
       this.info.isShow = false;
     },
+            //验证
+    check() {
+      return new Promise((resolve, reject) => {
+        //验证
+        if (this.user.rolename === "") {
+          errorAlert("角色名称不能为空");
+          return;
+        }
+        resolve();
+        
+      });
+      
+    },
     add() {
-      this.user.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
+      this.check().then(res=>{
+ this.user.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
       resRolAdd(this.user).then(res => {
         if (res.data.code == 200) {
           successAlert(res.data.msg);
@@ -80,6 +94,8 @@ export default {
           this.$emit("init");
         }
       });
+      })
+     
     },
 
     closed(){

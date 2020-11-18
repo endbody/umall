@@ -554,7 +554,7 @@ console.log(d);
 export const reqSecksList = (p) => {//限时秒杀列表
     return axios({
         method: "get",
-        url: baseUrl + "/api/seckslist",
+        url: baseUrl + "/api/secklist",
         params:p,
 
     })
@@ -563,16 +563,12 @@ export const reqSecksList = (p) => {//限时秒杀列表
 
 
 
-export const reqSecksUpdate = (secks) => {//限时秒杀修改
+export const reqSecksDetail = (id) => {//限时秒杀获取（一条）
 
-    let d = new FormData();
-    for (let key in secks) {
-        d.append(key,secks[key])
-    }
     return axios({
-        method: "post",
-        url: baseUrl + "/api/secksedit",
-        data: d
+        method: "get",
+        url: baseUrl + "/api/seckinfo",
+        params:{id}
     })
 }
 
@@ -581,7 +577,7 @@ export const reqSecksUpdate = (secks) => {//限时秒杀修改
 export const reqSecksDel = (id) => {//限时秒杀删除
     return axios({
         method: "post",
-        url: baseUrl + "/api/secksdelete",
+        url: baseUrl + "/api/seckdelete",
         data: qs.stringify({id})
     })
 }
@@ -589,13 +585,22 @@ export const reqSecksDel = (id) => {//限时秒杀删除
 
 
 export const reqSecksAdd = (secks) => {//限时秒杀添加
+    console.log(secks);
     return axios({
         method: "post",
-        url: baseUrl + "/api/secksadd",
+        url: baseUrl + "/api/seckadd",
         data: qs.stringify(secks)
     })
 }
 
+export const reqSecksUpdate = (secks) => {//限时秒杀修改
+    console.log(secks);
+    return axios({
+        method: "post",
+        url: baseUrl + "/api/seckedit",
+        data: qs.stringify(secks)
+    })
+}
 
 
 

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :title="info.title" :visible.sync="info.isShow">
+    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
       <el-form :model="specs">
         <el-form-item label="规格名称" label-width="150px">
           <el-input v-model="specs.specsname" autocomplete="off"></el-input>
@@ -76,6 +76,9 @@ export default {
         }
       });
     },
+    close() {
+      this.empty();
+    },
     empty() {
       this.specs = {
         specsname: "",
@@ -87,7 +90,27 @@ export default {
     Alter() {
       this.info.isShow = false;
     },
+            //验证
+    check() {
+      return new Promise((resolve, reject) => {
+        //验证
+        if (this.specs.specsname === "") {
+          errorAlert("规格名称不能为空");
+          return;
+        }
+        if (this.atterArr.length <= 1) {
+          errorAlert("规格属性不能为空");
+          return;
+        }
+
+
+        resolve();
+        
+      });
+      
+    },
     add() {
+      this.check().then(()=>{
       this.specs.attrs = JSON.stringify(
         this.atterArr.map(item => {
           return item.value;
@@ -99,9 +122,11 @@ export default {
           this.empty();
           this.Alter();
           this.reqList();
-          this.reqCount()
+          this.reqCount();
         }
       });
+      })
+
     },
 
     Addatter() {

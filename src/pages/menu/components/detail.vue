@@ -1,11 +1,11 @@
 <template>
   <div>
-    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
-   <el-form :model="form">
-        <el-form-item label="菜单名称" label-width="120px">
-          <el-input v-model="form.title" autocomplete="off"></el-input>
+    <el-dialog :title="info.title"  :visible.sync="info.isShow" @closed="close">
+   <el-form :model="form" :rules="rules">
+        <el-form-item label="菜单名称" label-width="120px" prop="title">
+          <el-input v-model="form.title" autocomplete="off" ></el-input>
         </el-form-item>
-        <el-form-item label="上级菜单" label-width="120px">
+        <el-form-item label="上级菜单" label-width="120px" prop="pid">
           <el-select v-model="form.pid" placeholder="请选择" @change="changePid">
             <el-option label="顶级菜单" :value="0"></el-option>
             <!-- 23 list遍历 -->
@@ -17,14 +17,14 @@
           <el-radio v-model="form.type" :label="2" disabled>菜单</el-radio>
         </el-form-item>
         <!-- 15.目录有图标，菜单有地址 -->
-        <el-form-item label="菜单图标" v-if="form.type===1" label-width="120px">
+        <el-form-item label="菜单图标" v-if="form.type===1" prop="icon" label-width="120px">
           <el-select v-model="form.icon" placeholder="请选择">
             <el-option v-for="item in icon" :key="item" :value="item">
               <i :class="item"></i>
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="菜单地址" v-else label-width="120px">
+        <el-form-item label="菜单地址" prop="url" v-else label-width="120px">
           <el-select v-model="form.url" placeholder="请选择">
             <!-- 10.遍历routes -->
             <el-option
@@ -61,6 +61,20 @@ import { successAlert, errorAlert } from "../../../utils/alert";
 export default {
   data() {
     return {
+         rules: {
+          title: [
+            { required: true, message: '请输入菜单名称', trigger: 'blur' },
+          ],
+          pid: [
+            { required: true, message: '请选择上级菜单', trigger: 'change' }
+          ],
+          icon: [
+            { required: true, message: '请选择菜单图标', trigger: 'change' }
+          ],
+          url: [
+            { required: true, message: '请选择菜单地址', trigger: 'change' }
+          ]
+        },
       form: {
         pid: "",
         title: "",
@@ -83,7 +97,31 @@ export default {
   props: ["info", "list"],
   mounted() {},
   methods: {
+        //验证
+    check() {
+      return new Promise((resolve, reject) => {
+        //验证
+        if (this.form.title === "") {
+          errorAlert("菜单名称不能为空");
+          return;
+        }
+        if (this.form.pid === "") {
+          errorAlert("上级菜单不能为空");
+          return;
+        }
+
+        if (this.form.type === "") {
+          errorAlert("菜单类型为空");
+          return;
+        }
+
+        resolve();
+        
+      });
+      
+    },
     add() {
+      this.check().then(()=>{
       reqMenuAdd(this.form).then(res => {
         if (res.data.code === 200) {
           successAlert(res.data.msg);
@@ -101,6 +139,8 @@ export default {
           errorAlert(res.data.msg);
         }
       });
+      })
+
     },
     changePid() {
       if (this.form.pid === 0) {

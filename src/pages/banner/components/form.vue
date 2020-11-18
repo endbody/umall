@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :title="info.title" :visible.sync="info.isShow">
+    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
       <el-form :model="banner">
         <el-form-item label="标题" label-width="150px">
           <el-input v-model="banner.title" autocomplete="off"></el-input>
@@ -51,7 +51,7 @@ export default {
         img: null,
         status: 1
       },
-      imgUrl: null,
+      imgUrl: null
     };
   },
   props: ["info"],
@@ -68,6 +68,9 @@ export default {
         }
       });
     },
+    close() {
+      this.empty();
+    },
     empty() {
       this.banner = {
         title: "",
@@ -80,7 +83,7 @@ export default {
       this.info.isShow = false;
     },
     add() {
-      console.log(this.banner)
+      console.log(this.banner);
       reqBannerAdd(this.banner).then(res => {
         if (res.data.code == 200) {
           this.empty();
