@@ -1,21 +1,32 @@
-# umall
+### 登陆模块
+ok
 
-> A Vue.js project
+默认超管账号：user:admin , pwd:123 
 
-## Build Setup
 
-``` bash
-# install dependencies
-npm install
+### 菜单管理
+ok
 
-# serve with hot reload at localhost:8080
-npm run dev
+### 角色管理
+ok
 
-# build for production with minification
-npm run build
+### 管理员管理
+ok
 
-# build for production and view the bundle analyzer report
-npm run build --report
-```
+### 商品分类管理
+ok
 
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+### 商品规格管理
+ok
+
+### 商品管理
+ok
+
+### 会员管理
+ok
+
+### 轮播图管理
+ok
+
+### 限时秒杀管理
+刚做完静态页
