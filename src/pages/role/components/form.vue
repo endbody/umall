@@ -78,6 +78,11 @@ export default {
           errorAlert("角色名称不能为空");
           return;
         }
+             //验证
+        if (this.$refs.tree.getCheckedKeys().length === 0) {
+          errorAlert("角色权限不能为空");
+          return;
+        }
         resolve();
         
       });
@@ -106,8 +111,8 @@ export default {
     },
 
     update() {
+      this.check().then(()=>{
       this.user.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
-
       reqRolEdit(this.user).then(res => {
         if (res.data.code === 200) {
           successAlert(res.data.msg);
@@ -116,6 +121,8 @@ export default {
           this.$emit("init")
         }
       });
+      })
+
     },
 
     init() {

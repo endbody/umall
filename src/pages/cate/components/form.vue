@@ -107,7 +107,7 @@ export default {
           return;
         }
 
-        if (this.imgUrl == null) {
+        if (this.imgUrl == null && this.cate.pid !== 0) {
           errorAlert("图片为空");
           return;
         }
@@ -132,7 +132,6 @@ export default {
     },
 
     Upload(e) {
-      console.log(e);
 
       let extname = path.extname(e.raw.name);
       let extArr = [".jpg", ".jpeg", ".png", ".jif"];
@@ -150,6 +149,7 @@ export default {
     },
 
     update() {
+      this.check().then(()=>{
       resCateUpdate(this.cate).then(res => {
         if (res.data.code === 200) {
           successAlert(res.data.msg);
@@ -158,6 +158,7 @@ export default {
           this.reqList();
         }
       });
+      })
     },
 
     init() {

@@ -82,9 +82,31 @@ export default {
       this.info.isShow = false;
     },
 
+       //验证
+    check() {
+      return new Promise((resolve, reject) => {
+        //验证
+        if (this.vip.nickname === "") {
+          errorAlert("手机号不能为空");
+          return;
+        }
+        if (this.vip.phone === "") {
+          errorAlert("昵称不能为空");
+          return;
+        }
+        if (this.vip.password === "") {
+          errorAlert("密码为空");
+          return;
+        }
+      
+        resolve();
+
+      });
+
+    },
 
     update() {
-    console.log(this.vip);
+      this.check().then(()=>{
       reqMemberUpdate(this.vip).then(res => {
         if (res.data.code === 200) {
           successAlert(res.data.msg);
@@ -93,6 +115,8 @@ export default {
           this.reqList();
         }
       });
+      })
+
     },
 
     init() {

@@ -68,6 +68,25 @@ export default {
         }
       });
     },
+        //验证
+    check() {
+      return new Promise((resolve, reject) => {
+        //验证
+        if (this.banner.title === "") {
+          errorAlert("标题不能为空");
+          return;
+        }
+        if (this.imgUrl === null) {
+          errorAlert("图片不能为空");
+          return;
+        }
+      
+        resolve();
+
+      });
+
+    },
+
     close() {
       this.empty();
     },
@@ -83,7 +102,7 @@ export default {
       this.info.isShow = false;
     },
     add() {
-      console.log(this.banner);
+     this.check().then(()=>{
       reqBannerAdd(this.banner).then(res => {
         if (res.data.code == 200) {
           this.empty();
@@ -91,6 +110,8 @@ export default {
           this.reqList();
         }
       });
+     })
+
     },
 
     Upload(e) {
@@ -110,6 +131,7 @@ export default {
     },
 
     update() {
+      this.check().then(()=>{
       reqBannerUpdate(this.banner).then(res => {
         if (res.data.code === 200) {
           successAlert(res.data.msg);
@@ -118,6 +140,8 @@ export default {
           this.reqList();
         }
       });
+      })
+
     },
 
     init() {

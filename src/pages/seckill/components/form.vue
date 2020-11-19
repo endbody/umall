@@ -138,6 +138,41 @@ export default {
         }
       });
     },
+
+            //验证
+    check() {
+      return new Promise((resolve, reject) => {
+        //验证
+        if (this.seck.title === "") {
+          errorAlert("活动名称不能为空");
+          return;
+        }
+        if (this.value1.length === 0) {
+          errorAlert("活动期限不能为空");
+          return;
+        }
+
+        if (this.seck.first_cateid === "") {
+          errorAlert("一级分类为空");
+          return;
+        }
+
+          if (this.seck.second_cateid === "") {
+          errorAlert("二级分类不能为空");
+          return;
+        }
+
+        if (this.seck.goodsid === "") {
+          errorAlert("商品为空");
+          return;
+        }
+
+        resolve();
+        
+      });
+      
+    },
+
         close() {
       this.empty();
     },
@@ -157,13 +192,18 @@ export default {
     Alter() {
       this.info.isShow = false;
     },
+
+    
     add() {
+      this.check().then(()=>{
       this.seck.begintime = this.value1[0];
       this.seck.endtime = this.value1[1];
       reqSecksAdd(this.seck);
       this.reqList();
       this.Alter();
       this.empty();
+      })
+
     },
 
     changeCateid() {
@@ -185,6 +225,7 @@ export default {
     },
 
     update() {
+      this.check().then(()=>{
       this.seck.begintime = this.value1[0];
       this.seck.endtime = this.value1[1];
       reqSecksUpdate(this.seck).then(res => {
@@ -195,6 +236,8 @@ export default {
           this.reqList();
         }
       });
+      })
+
     }
   },
   mounted() {

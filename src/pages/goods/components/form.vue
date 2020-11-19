@@ -1,9 +1,14 @@
 <template>
   <div>
-    <el-dialog :title="info.title" :visible.sync="info.isShow" @closed="close">
+    <el-dialog :title="info.title" :visible.sync="info.isShow" @opened="open" @closed="close">
       <el-form :model="goods">
-        <el-form-item label="一级分类" label-width="150px" >
-          <el-select v-model="goods.first_cateid" prop="first_cateid" placeholder="请选择" @change="changeCateid">
+        <el-form-item label="一级分类" label-width="150px">
+          <el-select
+            v-model="goods.first_cateid"
+            prop="first_cateid"
+            placeholder="请选择"
+            @change="changeCateid"
+          >
             <el-option
               v-for="item in CateList"
               :key="item.id"
@@ -23,7 +28,7 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="商品名称" label-width="150px" >
+        <el-form-item label="商品名称" label-width="150px">
           <el-input v-model="goods.goodsname" prop="goodsname" autocomplete="off"></el-input>
         </el-form-item>
 
@@ -74,7 +79,8 @@
         </el-form-item>
 
         <el-form-item label="商品描述" label-width="150px">
-          <textarea v-model="goods.description" cols="30" rows="10"></textarea>
+          <!-- <textarea v-model="goods.description" cols="30" rows="10"></textarea> -->
+          <div id="div1" v-if="info.isShow"></div>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -97,6 +103,7 @@ import {
 import { successAlert, errorAlert } from "../../../utils/alert";
 import { mapActions, mapGetters } from "vuex";
 import path from "path";
+import E from "wangeditor";
 
 export default {
   computed: {
@@ -107,32 +114,6 @@ export default {
   },
   data() {
     return {
-          rules: {
-        first_cateid: [
-          { required: true, message: "请输入一级分类", trigger: "change" }
-        ],
-        second_cateid: [
-          { required: true, message: "请输入二级分类", trigger: "change" }
-        ],
-        goodsname: [
-          { required: true, message: "请输入商品名称", trigger: "blur" }
-        ],
-        price: [{ required: true, message: "请输入商品价格", trigger: "blur" }],
-        market_price: [
-          { required: true, message: "请输入商品市场价格", trigger: "blur" }
-        ],
-        specsid: [
-          { required: true, message: "请输入商品规格", trigger: "change" }
-        ],
-        specsattr: [
-          {
-            type: "array",
-            required: true,
-            message: "请至少选择一个规格属性",
-            trigger: "change"
-          }
-        ]
-      },
       goods: {
         first_cateid: "",
         second_cateid: "",
@@ -165,10 +146,17 @@ export default {
       reqGoodsDetail(id).then(res => {
         if (res.data.code === 200) {
           this.goods = res.data.list;
+          
           this.imgUrl = this.$img + res.data.list.img;
           this.atteArr = JSON.parse(res.data.list.specsattr);
           this.atterListArr = JSON.parse(res.data.list.specsattr);
           this.goods.id = id;
+
+                //给编辑器赋值
+        if (this.editor) {
+          console.log(this.goods.description);
+          this.editor.txt.html(this.goods.description);
+        }
 
           resCateList({ pid: this.goods.first_cateid }).then(res => {
             if (res.data.code === 200) {
@@ -180,6 +168,11 @@ export default {
     },
     close() {
       this.empty();
+    },
+    open() {
+      this.editor = new E("#div1");
+      this.editor.create();
+      this.editor.txt.html(this.goods.description)
     },
     empty() {
       this.goods = {
@@ -236,7 +229,7 @@ export default {
           errorAlert("请选择商品规格");
           return;
         }
-        if (this.goods.specsattr.length === 0) {
+        if (this.atterListArr.length === 0) {
           errorAlert("请选择商品属性");
           return;
         }
@@ -245,23 +238,26 @@ export default {
           return;
         }
         resolve();
-        
+
       });
-      
+
     },
     add() {
-      this.check().then(()=>{
+      this.check().then(() => {
+        this.goods.description = this.editor.txt.html();
         this.p = { ...this.goods };
-      this.p.specsattr = JSON.stringify(this.atteArr);
-      reqGoodsAdd(this.p).then(res => {
-        if (res.data.code == 200) {
-          this.empty();
-          this.Alter();
-          this.reqGoodList();
-          this.reqCount();
-        }
+        this.p.specsattr = JSON.stringify(this.atteArr);
+        this.p.specsattr = JSON.stringify(this.atteArr);
+        
+        reqGoodsAdd(this.p).then(res => {
+          if (res.data.code == 200) {
+            this.empty();
+            this.Alter();
+            this.reqGoodList();
+            this.reqCount();
+          }
+        });
       });
-      })
     },
 
     atterList() {
@@ -296,6 +292,8 @@ export default {
     },
 
     update() {
+      this.check().then(()=>{
+      this.goods.description = this.editor.txt.html();
       this.p = { ...this.goods };
       this.p.specsattr = JSON.stringify(this.atteArr);
       reqGoodsUpdate(this.goods).then(res => {
@@ -306,6 +304,7 @@ export default {
           this.reqGoodList();
         }
       });
+      })
     }
   },
   mounted() {

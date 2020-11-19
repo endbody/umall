@@ -124,6 +124,7 @@ export default {
     },
 
     update() {
+      this.check().then(()=>{
       resUserUpdate(this.user).then(res => {
         if (res.data.code === 200) {
           successAlert(res.data.msg);
@@ -132,6 +133,8 @@ export default {
           this.$emit("init");
         }
       });
+      })
+
     },
 
     init() {
