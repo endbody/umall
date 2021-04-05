@@ -1,6 +1,7 @@
 
 <template>
   <!-- 29.封装删除组件 -->
+  <!-- 测试 -->
   <el-button type="danger" @click="del">删除</el-button>
 </template>
 
